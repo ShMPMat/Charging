@@ -22,3 +22,5 @@ CREATE TABLE Station
         ON DELETE CASCADE
 );
 
+CREATE EXTENSION cube;
+CREATE EXTENSION earthdistance;

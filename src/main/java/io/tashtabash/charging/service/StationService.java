@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -54,5 +55,16 @@ public class StationService {
         getStation(id);
 
         stationRepository.deleteById(id);
+    }
+
+    public List<Station> searchInRadiusOrderByDistance(double latitude, double longitude, double radiusKm) {
+        return stationRepository.searchInRadiusOrderByDistance(latitude, longitude, radiusKm);
+    }
+
+    @Transactional
+    public List<Station> searchByCompany(long companyId) {
+        companyService.getCompany(companyId);
+
+        return stationRepository.searchByCompany(companyId);
     }
 }

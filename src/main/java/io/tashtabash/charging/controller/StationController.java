@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @CrossOrigin
@@ -36,6 +38,22 @@ public class StationController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(newStation);
+    }
+
+    @GetMapping(value="")
+    public ResponseEntity<List<Station>> searchStations(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam double radiusKm
+    ) {
+        if (radiusKm < 0) {
+            return ResponseEntity.badRequest()
+                    .build();
+        }
+
+        List<Station> stations = stationService.searchInRadiusOrderByDistance(latitude, longitude, radiusKm);
+
+        return ResponseEntity.ok(stations);
     }
 
     @GetMapping(value="/{id}")

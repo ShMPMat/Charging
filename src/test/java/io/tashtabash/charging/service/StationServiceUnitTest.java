@@ -8,8 +8,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -163,6 +166,57 @@ class StationServiceUnitTest {
         assertThrows(
                 NoStationFoundException.class,
                 () -> stationService.deleteStation(id)
+        );
+    }
+
+    @Test
+    @Transactional
+    void searchInRadiusOrderByDistance() {
+        var company = new Company(1, "Test Name", null);
+        var expectedStations = List.of(
+                new Station(1, "SName", 1.0, 0.0, company),
+                new Station(2, "SName", 1.0, 1.0, company)
+        );
+        when(stationRepository.searchInRadiusOrderByDistance(0.0, 0.0, 200.0))
+                .thenReturn(expectedStations);
+
+        var foundStations = stationService.searchInRadiusOrderByDistance(0.0, 0.0, 200.0);
+
+        verify(stationRepository, times(1))
+                .searchInRadiusOrderByDistance(0.0, 0.0, 200);
+        assertThat(foundStations).containsExactlyElementsOf(expectedStations);
+    }
+
+    @Test
+    @Transactional
+    void searchOwnedStations() {
+        var company = new Company(1, "Test Name", null);
+        var expectedStations = List.of(
+                new Station(1, "SName", 1.0, 0.0, company),
+                new Station(2, "SName", 1.0, 1.0, company)
+        );
+        when(companyService.getCompany(company.getId()))
+                .thenReturn(company);
+        when(stationRepository.searchByCompany(company.getId()))
+                .thenReturn(expectedStations);
+
+        List<Station> foundStations = stationService.searchByCompany(company.getId());
+
+        verify(stationRepository, times(1))
+                .searchByCompany(company.getId());
+        assertThat(foundStations).containsExactlyElementsOf(expectedStations);
+    }
+
+    @Test
+    @Transactional
+    void searchOwnedStationsThrowsOnNonExistentCompany() {
+        var company = new Company(1, "Test Name", null);
+        when(companyService.getCompany(company.getId()))
+                .thenThrow(new NoCompanyFoundException(company.getId()));
+
+        assertThrows(
+                NoCompanyFoundException.class,
+                () -> stationService.searchByCompany(company.getId())
         );
     }
 }

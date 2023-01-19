@@ -2,8 +2,10 @@ package io.tashtabash.charging.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.tashtabash.charging.entity.Company;
+import io.tashtabash.charging.entity.Station;
 import io.tashtabash.charging.service.CompanyService;
 import io.tashtabash.charging.service.NoCompanyFoundException;
+import io.tashtabash.charging.service.StationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,6 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.transaction.Transactional;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -22,6 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CompanyControllerTest {
     @MockBean
     CompanyService companyService;
+
+    @MockBean
+    StationService stationService;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -226,5 +235,21 @@ class CompanyControllerTest {
 
         mockMvc.perform(delete("/company/1"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void searchOwnedStations() throws Exception {
+        var company = new Company(1, "Test Name", null);
+        var expectedStations = List.of(
+                new Station(1, "SName", 1.0, 0.0, company),
+                new Station(2, "SName", 1.0, 1.0, company)
+        );
+        when(stationService.searchByCompany(company.getId()))
+                .thenReturn(expectedStations);
+
+        mockMvc.perform(get("/company/1/station"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedStations)));
     }
 }

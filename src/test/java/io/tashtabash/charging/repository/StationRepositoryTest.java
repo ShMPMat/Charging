@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -163,5 +164,73 @@ class StationRepositoryTest {
                 DataAccessException.class,
                 () -> stationRepository.deleteById(1L)
         );
+    }
+
+    @Test
+    @Transactional
+    void searchInRadiusOrderByDistance() {
+        var company = new Company(1, "Test Name", null);
+        var station1 = new Station(1, "SName", 1.0, 0.0, company);
+        var station2 = new Station(2, "SName", 1.0, 1.0, company);
+        var station3 = new Station(3, "SName", 10.0, 0.0, company);
+        insertCompany(company);
+        insertStation(station1);
+        insertStation(station2);
+        insertStation(station3);
+
+        var stations = stationRepository.searchInRadiusOrderByDistance(0.0, 0.0, 200.0);
+
+        assertEquals(2, stations.size());
+        assertEquals(station1, stations.get(0));
+        assertEquals(station2, stations.get(1));
+    }
+
+    @Test
+    @Transactional
+    void searchOwnedStations() {
+        var company = new Company(2, "Test Name", null);
+        var childCompany1 = new Company(3, "Test Name", company);
+        var childCompany2 = new Company(4, "Test Name", company);
+        var grandchildCompany = new Company(5, "Test Name", childCompany2);
+        var relevantStation1 = new Station(1, "SName", 1.0, 0.0, company);
+        var relevantStation2 = new Station(2, "SName", 1.0, 1.0, childCompany1);
+        var relevantStation3 = new Station(3, "SName", 10.0, 0.0, childCompany2);
+        var relevantStation4 = new Station(4, "SName", 10.0, 0.0, grandchildCompany);
+        var irrelevantCompany = new Company(6, "Test Name", null);
+        var irrelevantStation1 = new Station(5, "SName", 10.0, 0.0, irrelevantCompany);
+        insertCompany(company);
+        insertCompany(childCompany1);
+        insertCompany(childCompany2);
+        insertCompany(grandchildCompany);
+        insertCompany(irrelevantCompany);
+        insertStation(relevantStation1);
+        insertStation(relevantStation2);
+        insertStation(relevantStation3);
+        insertStation(relevantStation4);
+        insertStation(irrelevantStation1);
+
+        List<Station> childStations = stationRepository.searchByCompany(company.getId());
+
+        assertEquals(4, childStations.size());
+        assertThat(childStations).containsOnly(relevantStation1, relevantStation2, relevantStation3, relevantStation4);
+    }
+
+    @Test
+    @Transactional
+    void searchOwnedStationsIgnoresParentStations() {
+        // 1 degree latitude = about 111 km
+        var parentCompany = new Company(1, "Test Name", null);
+        var company = new Company(2, "Test Name", parentCompany);
+        var irrelevantStation2 = new Station(6, "SName", 10.0, 0.0, parentCompany);
+        var relevantStation1 = new Station(1, "SName", 1.0, 0.0, company);
+        insertCompany(parentCompany);
+        insertCompany(company);
+        insertStation(relevantStation1);
+        insertStation(irrelevantStation2);
+
+        List<Station> childStations = stationRepository.searchByCompany(company.getId());
+
+        assertEquals(1, childStations.size());
+        assertThat(childStations).containsOnly(relevantStation1);
     }
 }

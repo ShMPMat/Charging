@@ -14,6 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -112,6 +114,28 @@ class StationControllerTest {
 
         mockMvc.perform(get("/station/1"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getStationsInRadius() throws Exception {
+        var company = new Company(5, "Test Name", null);
+        var expectedStations = List.of(
+                new Station(1, "SName", 1.0, 0.0, company),
+                new Station(2, "SName", 1.0, 1.0, company)
+        );
+        when(stationService.searchInRadiusOrderByDistance(0.0, 0.0, 200.0))
+                .thenReturn(expectedStations);
+
+        mockMvc.perform(get("/station?latitude=0.0&longitude=0.0&radiusKm=200.0"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedStations)));
+    }
+
+    @Test
+    void getStationsInRadiusThrow400OnNegativeRadius() throws Exception {
+        mockMvc.perform(get("/station?latitude=0.0&longitude=0.0&radiusKm=-200"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

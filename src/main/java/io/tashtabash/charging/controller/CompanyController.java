@@ -2,11 +2,15 @@ package io.tashtabash.charging.controller;
 
 
 import io.tashtabash.charging.entity.Company;
+import io.tashtabash.charging.entity.Station;
 import io.tashtabash.charging.service.CompanyService;
+import io.tashtabash.charging.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -15,9 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class CompanyController {
     private final CompanyService companyService;
 
+    private final StationService stationService;
+
     @Autowired
-    public CompanyController(CompanyService companyService) {
+    public CompanyController(CompanyService companyService, StationService stationService) {
         this.companyService = companyService;
+        this.stationService = stationService;
     }
 
     @PostMapping(value="")
@@ -59,5 +66,12 @@ public class CompanyController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .build();
+    }
+
+    @GetMapping(value="/{id}/station")
+    public ResponseEntity<List<Station>> searchStations(@PathVariable long id) {
+        List<Station> stations = stationService.searchByCompany(id);
+
+        return ResponseEntity.ok(stations);
     }
 }

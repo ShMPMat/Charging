@@ -21,3 +21,6 @@ CREATE TABLE Station
             REFERENCES Company(id)
         ON DELETE CASCADE
 );
+
+CREATE EXTENSION cube;
+CREATE EXTENSION earthdistance;
