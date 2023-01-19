@@ -207,7 +207,6 @@ class CompanyRepositoryTest {
         List<Company> companies = entityManager
                 .createQuery("SELECT c from Company c", Company.class)
                 .getResultList();
-
         assertEquals(0, companies.size());
     }
 }
