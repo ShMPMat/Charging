@@ -71,7 +71,7 @@ class CompanyServiceUnitTest {
 
     @Test
     void getCompany() {
-        var expectedCompany = new Company(1, "Test getName", null);
+        var expectedCompany = new Company(1, "Test Name", null);
         when(companyRepository.findById(expectedCompany.getId()))
                 .thenReturn(Optional.of(expectedCompany));
 
@@ -85,8 +85,8 @@ class CompanyServiceUnitTest {
 
     @Test
     void getCompanyWithParent() {
-        var parentCompany = new Company(1, "Test getName", null);
-        var expectedCompany = new Company(2, "Test getName", parentCompany);
+        var parentCompany = new Company(1, "Test Name", null);
+        var expectedCompany = new Company(2, "Test Name", parentCompany);
         when(companyRepository.findById(expectedCompany.getId()))
                 .thenReturn(Optional.of(expectedCompany));
 
@@ -108,7 +108,7 @@ class CompanyServiceUnitTest {
 
     @Test
     void updateCompany() {
-        var company = new Company(1, "getName", null);
+        var company = new Company(1, "Name", null);
         when(companyRepository.save(company))
                 .thenReturn(company);
         when(companyRepository.findById(company.getId()))
@@ -124,7 +124,7 @@ class CompanyServiceUnitTest {
     @Test
     void updateCompanyWithParent() {
         var newParentCompany = new Company(2, "Test Name", null);
-        var company = new Company(3, "getName", newParentCompany);
+        var company = new Company(3, "Name", newParentCompany);
         when(companyRepository.save(company))
                 .thenReturn(company);
         when(companyRepository.findById(company.getId()))
@@ -142,7 +142,7 @@ class CompanyServiceUnitTest {
     @Test
     void updateCompanyThrowsOnUnknownParent() {
         var nonExistentCompany = new Company(2, "Test Name", null);
-        var company = new Company(1, "getName", nonExistentCompany);
+        var company = new Company(1, "Name", nonExistentCompany);
         when(companyRepository.save(company))
                 .thenReturn(company);
         when(companyRepository.findById(company.getId()))
@@ -166,7 +166,7 @@ class CompanyServiceUnitTest {
 
     @Test
     void deleteCompany() {
-        var company = new Company(1, "getName", null);
+        var company = new Company(1, "Name", null);
         doNothing()
                 .when(companyRepository)
                 .deleteById(company.getId());
