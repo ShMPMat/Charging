@@ -19,6 +19,7 @@ public class CompanyService {
         this.companyRepository = companyRepository;
     }
 
+    @Transactional
     public Company saveCompany(String name, Long parentCompanyId) {
         var parentCompany = parentCompanyId == null ? null : getCompany(parentCompanyId);
         var company = new Company(name, parentCompany);
