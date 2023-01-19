@@ -95,9 +95,10 @@ class CompanyControllerTest {
     @ParameterizedTest()
     @ValueSource(strings = { "", "    ", "\t", "\u205F" })
     void saveCompanyAnswers400WhenWhitespaceName(String emptyName) throws Exception {
-        var json = "{getName: \"" + companyService + "\", getParentCompanyId: null}";
+        var payload = new SaveCompanyDto(emptyName, null);
         mockMvc.perform(
-                post("/company").content(emptyName)
+                post("/company")
+                        .content(objectMapper.writeValueAsString(payload))
                         .contentType("application/json")
                         .characterEncoding("UTF-8")
         ).andExpect(status().isBadRequest());
@@ -155,7 +156,7 @@ class CompanyControllerTest {
     @Test
     void updateCompanyWithParent() throws Exception {
         var newParentCompany = new Company(2, "Test Name", null);
-        var company = new Company(3, "getName", newParentCompany);
+        var company = new Company(3, "Name", newParentCompany);
         when(companyService.updateCompany(company))
                 .thenReturn(company);
 
