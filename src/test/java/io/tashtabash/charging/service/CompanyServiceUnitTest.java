@@ -109,34 +109,36 @@ class CompanyServiceUnitTest {
     @Test
     void updateCompany() {
         var company = new Company(1, "Name", null);
-        when(companyRepository.save(company))
-                .thenReturn(company);
+        var newCompany = new Company(1, "New Name", null);
         when(companyRepository.findById(company.getId()))
                 .thenReturn(Optional.of(company));
+        when(companyRepository.save(newCompany))
+                .thenReturn(newCompany);
 
-        var returnedCompany = companyService.updateCompany(company);
+        var returnedCompany = companyService.updateCompany(newCompany);
 
         verify(companyRepository, times(1))
-                .save(company);
-        assertEquals(company, returnedCompany);
+                .save(newCompany);
+        assertEquals(newCompany, returnedCompany);
     }
 
     @Test
     void updateCompanyWithParent() {
         var newParentCompany = new Company(2, "Test Name", null);
-        var company = new Company(3, "Name", newParentCompany);
-        when(companyRepository.save(company))
-                .thenReturn(company);
+        var company = new Company(3, "Name", null);
+        var newCompany = new Company(3, "New Name", newParentCompany);
         when(companyRepository.findById(company.getId()))
                 .thenReturn(Optional.of(company));
         when(companyRepository.findById(newParentCompany.getId()))
                 .thenReturn(Optional.of(newParentCompany));
+        when(companyRepository.save(newCompany))
+                .thenReturn(newCompany);
 
-        var returnedCompany = companyService.updateCompany(company);
+        var returnedCompany = companyService.updateCompany(newCompany);
 
         verify(companyRepository, times(1))
-                .save(company);
-        assertEquals(company, returnedCompany);
+                .save(newCompany);
+        assertEquals(newCompany, returnedCompany);
     }
 
     @Test
