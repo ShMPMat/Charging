@@ -1,6 +1,7 @@
 package io.tashtabash.charging.repository;
 
 import io.tashtabash.charging.entity.Company;
+import io.tashtabash.charging.entity.Station;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,16 @@ class CompanyRepositoryTest {
         }
 
         query.executeUpdate();
+    }
+
+    private void insertStation(Station station) {
+        entityManager.createNativeQuery("INSERT INTO Station values(?, ?, ?, ?, ?)")
+                .setParameter(1, station.getId())
+                .setParameter(2, station.getName())
+                .setParameter(3, station.getLatitude())
+                .setParameter(4, station.getLongitude())
+                .setParameter(5, station.getCompany().getId())
+                .executeUpdate();
     }
 
     @Test
@@ -208,5 +219,24 @@ class CompanyRepositoryTest {
                 .createQuery("SELECT c from Company c", Company.class)
                 .getResultList();
         assertEquals(0, companies.size());
+    }
+
+
+
+    @Test
+    @Transactional
+    void deleteCompanyCascadesToStations() {
+        var company = new Company(1, "Test Name", null);
+        var expectedStation = new Station(1, "SName", 0.0, 1.1, company);
+        insertCompany(company);
+        insertStation(expectedStation);
+
+        assertDoesNotThrow(() -> companyRepository.deleteById(company.getId()));
+        entityManager.flush();
+
+        List<Station> stations = entityManager
+                .createQuery("SELECT s from Station s", Station.class)
+                .getResultList();
+        assertEquals(0, stations.size());
     }
 }
