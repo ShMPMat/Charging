@@ -8,6 +8,8 @@ import io.tashtabash.charging.service.NoStationFoundException;
 import io.tashtabash.charging.service.StationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,6 +33,24 @@ class StationControllerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    private static List<Arguments> incorrectCoordinatesSource() {
+        return List.of(
+                Arguments.of(-90.0001, 0.0),
+                Arguments.of(210.0001, 0.0),
+                Arguments.of(0.0, 180.01),
+                Arguments.of(0.0, 1230.0),
+                Arguments.of(-110.0, 1230.0)
+        );
+    }
+
+    private static List<Arguments> correctCoordinatesSource() {
+        return List.of(
+                Arguments.of(90, 180.0),
+                Arguments.of(-90, -180.0),
+                Arguments.of(-88.0, 120.0)
+        );
+    }
 
     @Test
     void saveStation() throws Exception {
@@ -86,6 +106,46 @@ class StationControllerTest {
     @ValueSource(strings = { "", "    ", "\t", "\u205F" })
     void saveStationAnswers400WhenWhitespaceName(String emptyName) throws Exception {
         var payload = new SaveStationDto(emptyName, 0.0, 0.0, 1);
+        mockMvc.perform(
+                post("/station")
+                        .content(objectMapper.writeValueAsString(payload))
+                        .contentType("application/json")
+                        .characterEncoding("UTF-8")
+        ).andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest()
+    @MethodSource({ "correctCoordinatesSource" })
+    void saveStationAcceptsCorrectCoordinates(double latitude, double longitude) throws Exception {
+        var company = new Company(5, "Test Name", null);
+        var station = new Station("SName", latitude, longitude, company);
+        when(stationService.saveStation(
+                station.getName(),
+                station.getLatitude(),
+                station.getLongitude(),
+                station.getCompany().getId())
+        ).thenReturn(station);
+
+        var payload = new SaveStationDto(
+                station.getName(),
+                station.getLatitude(),
+                station.getLongitude(),
+                station.getCompany().getId()
+        );
+        mockMvc.perform(
+                post("/station")
+                        .content(objectMapper.writeValueAsString(payload))
+                        .contentType("application/json")
+                        .characterEncoding("UTF-8")
+                ).andExpect(status().isCreated())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(objectMapper.writeValueAsString(station)));
+    }
+
+    @ParameterizedTest()
+    @MethodSource({ "incorrectCoordinatesSource" })
+    void saveStationAnswers400OnIncorrectCoordinates(double latitude, double longitude) throws Exception {
+        var payload = new SaveStationDto("Name", latitude, longitude, 1);
         mockMvc.perform(
                 post("/station")
                         .content(objectMapper.writeValueAsString(payload))
@@ -192,6 +252,38 @@ class StationControllerTest {
                 put("/station")
                         .content(objectMapper.writeValueAsString(station))
                         .contentType("application/json")
+        ).andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest()
+    @MethodSource({ "correctCoordinatesSource" })
+    void updateStationAcceptsCorrectCoordinates(double latitude, double longitude) throws Exception {
+        var company = new Company(5, "Test Name", null);
+        var station = new Station(2, "SName", latitude, longitude, company);
+        when(stationService.updateStation(station))
+                .thenReturn(station);
+
+        mockMvc.perform(
+                        put("/station")
+                                .content(objectMapper.writeValueAsString(station))
+                                .contentType("application/json")
+                ).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(objectMapper.writeValueAsString(station)));
+    }
+
+    @ParameterizedTest()
+    @MethodSource({ "incorrectCoordinatesSource" })
+    void updateStation400OnIncorrectCoordinates(double latitude, double longitude) throws Exception {
+        var company = new Company(5, "Test Name", null);
+        var station = new Station(2, "SName", latitude, longitude, company);
+        when(stationService.updateStation(station))
+                .thenReturn(station);
+
+        mockMvc.perform(
+                        put("/station")
+                                .content(objectMapper.writeValueAsString(station))
+                                .contentType("application/json")
         ).andExpect(status().isBadRequest());
     }
 

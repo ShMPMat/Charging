@@ -22,11 +22,28 @@ public class StationController {
         this.stationService = stationService;
     }
 
-    @PostMapping(value="")
-    public ResponseEntity<Station> saveStation(@RequestBody SaveStationDto data) {
-        if (data.name().strip().equals("")) {
+    private ResponseEntity<Station> checkStationData(String name, double latitude, double longitude) {
+        if (name.strip().equals("")) {
             return ResponseEntity.badRequest()
                     .build();
+        }
+        if (latitude < -90 || 90 < latitude) {
+            return ResponseEntity.badRequest()
+                    .build();
+        }
+        if (longitude < -180 || 180 < longitude) {
+            return ResponseEntity.badRequest()
+                    .build();
+        }
+
+        return null;
+    }
+
+    @PostMapping(value="")
+    public ResponseEntity<Station> saveStation(@RequestBody SaveStationDto data) {
+        ResponseEntity<Station> badRequestResponse = checkStationData(data.name(), data.latitude(), data.longitude());
+        if (badRequestResponse != null) {
+            return badRequestResponse;
         }
 
         Station newStation = stationService.saveStation(
@@ -65,9 +82,13 @@ public class StationController {
 
     @PutMapping("")
     public ResponseEntity<Station> updateStation(@RequestBody Station station) {
-        if (station.getName().strip().equals("")) {
-            return ResponseEntity.badRequest()
-                    .build();
+        ResponseEntity<Station> badRequestResponse = checkStationData(
+                station.getName(),
+                station.getLatitude(),
+                station.getLongitude()
+        );
+        if (badRequestResponse != null) {
+            return badRequestResponse;
         }
 
         Station updatedStation = stationService.updateStation(station);
