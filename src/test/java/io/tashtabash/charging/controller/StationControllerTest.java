@@ -198,6 +198,13 @@ class StationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @ParameterizedTest()
+    @MethodSource({ "incorrectCoordinatesSource" })
+    void getStationsInRadiusThrow400OnIncorrectCoordinates(double latitude, double longitude) throws Exception {
+        mockMvc.perform(get("/station?latitude=" + latitude + "&longitude=" + longitude + "&radiusKm=200"))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void updateStation() throws Exception {
         var company = new Company(5, "Test Name", null);

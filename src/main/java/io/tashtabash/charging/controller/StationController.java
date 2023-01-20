@@ -68,6 +68,10 @@ public class StationController {
             @RequestParam double longitude,
             @RequestParam double radiusKm
     ) {
+        ResponseEntity<String> badRequestResponse = checkCoordinates(latitude, longitude);
+        if (badRequestResponse != null) {
+            return badRequestResponse;
+        }
         if (radiusKm < 0) {
             return ResponseEntity.badRequest()
                     .body("Radius must be positive");
