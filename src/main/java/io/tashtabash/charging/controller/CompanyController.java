@@ -28,10 +28,10 @@ public class CompanyController {
     }
 
     @PostMapping(value="")
-    public ResponseEntity<Company> saveCompany(@RequestBody SaveCompanyDto data) {
+    public ResponseEntity<?> saveCompany(@RequestBody SaveCompanyDto data) {
         if (data.name().strip().equals("")) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Company name must not be blank");
         }
 
         Company newCompany = companyService.saveCompany(data.name(), data.parentCompanyId());
@@ -49,10 +49,10 @@ public class CompanyController {
 
     //TODO add checks for inconsistent parent data?
     @PutMapping("")
-    public ResponseEntity<Company> updateCompany(@RequestBody Company company) {
+    public ResponseEntity<?> updateCompany(@RequestBody Company company) {
         if (company.getName().strip().equals("")) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Company name must not be blank");
         }
 
         Company updatedCompany = companyService.updateCompany(company);

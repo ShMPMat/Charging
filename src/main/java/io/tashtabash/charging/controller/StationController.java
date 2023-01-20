@@ -22,26 +22,31 @@ public class StationController {
         this.stationService = stationService;
     }
 
-    private ResponseEntity<Station> checkStationData(String name, double latitude, double longitude) {
+    private ResponseEntity<String> checkStationData(String name, double latitude, double longitude) {
         if (name.strip().equals("")) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Station name must not be blank");
         }
+
+        return checkCoordinates(latitude, longitude);
+    }
+
+    private ResponseEntity<String> checkCoordinates(double latitude, double longitude) {
         if (latitude < -90 || 90 < latitude) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Station latitude must be in range between -90 and 90");
         }
         if (longitude < -180 || 180 < longitude) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Station longitude must be in range between -180 and 180");
         }
 
         return null;
     }
 
     @PostMapping(value="")
-    public ResponseEntity<Station> saveStation(@RequestBody SaveStationDto data) {
-        ResponseEntity<Station> badRequestResponse = checkStationData(data.name(), data.latitude(), data.longitude());
+    public ResponseEntity<?> saveStation(@RequestBody SaveStationDto data) {
+        ResponseEntity<String> badRequestResponse = checkStationData(data.name(), data.latitude(), data.longitude());
         if (badRequestResponse != null) {
             return badRequestResponse;
         }
@@ -58,14 +63,14 @@ public class StationController {
     }
 
     @GetMapping(value="")
-    public ResponseEntity<List<Station>> searchStations(
+    public ResponseEntity<?> searchStations(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam double radiusKm
     ) {
         if (radiusKm < 0) {
             return ResponseEntity.badRequest()
-                    .build();
+                    .body("Radius must be positive");
         }
 
         List<Station> stations = stationService.searchInRadiusOrderByDistance(latitude, longitude, radiusKm);
@@ -81,8 +86,8 @@ public class StationController {
     }
 
     @PutMapping("")
-    public ResponseEntity<Station> updateStation(@RequestBody Station station) {
-        ResponseEntity<Station> badRequestResponse = checkStationData(
+    public ResponseEntity<?> updateStation(@RequestBody Station station) {
+        ResponseEntity<String> badRequestResponse = checkStationData(
                 station.getName(),
                 station.getLatitude(),
                 station.getLongitude()

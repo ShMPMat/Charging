@@ -46,7 +46,7 @@ function addCompany() {
         }
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -59,7 +59,7 @@ function addStation(companyId) {
             .stations[station.id] = station
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -74,7 +74,7 @@ function updateCompany(id) {
         editedCompanies.value.delete(id)
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -88,7 +88,7 @@ function updateStation(companyId, id) {
         editedStations.value.delete(id)
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -99,7 +99,7 @@ function deleteCompany(id) {
         delete newStations.value[id]
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -110,7 +110,7 @@ function deleteStation(companyId, stationId) {
         company.stations = company.stations.filter(s => s.id !== stationId)
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -120,7 +120,7 @@ function searchCompanyStations() {
         companyStationsView.value.stations = result.data
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 
@@ -132,7 +132,7 @@ function searchStationsInRadius() {
         stationsIdRadiusView.value.stations = result.data
       })
       .catch(error => {
-        window.alert(error)
+        window.alert(error.response.data.message ?? error.response.data)
       })
 }
 </script>
