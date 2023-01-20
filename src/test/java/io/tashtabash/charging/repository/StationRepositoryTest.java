@@ -29,8 +29,8 @@ class StationRepositoryTest {
 
     private void insertCompany(Company company) {
         Query query = company.getParentCompany() == null
-                ? entityManager.createNativeQuery("INSERT INTO Company values(?, ?, null)")
-                : entityManager.createNativeQuery("INSERT INTO Company values(?, ?, ?)");
+                ? entityManager.createNativeQuery("INSERT INTO Company values(?, ?, null) ON CONFLICT DO NOTHING")
+                : entityManager.createNativeQuery("INSERT INTO Company values(?, ?, ?) ON CONFLICT DO NOTHING");
 
         query.setParameter(1, company.getId())
                 .setParameter(2, company.getName());
@@ -43,6 +43,7 @@ class StationRepositoryTest {
     }
 
     private void insertStation(Station station) {
+        insertCompany(station.getCompany());
         entityManager.createNativeQuery("INSERT INTO Station values(?, ?, ?, ?, ?)")
                 .setParameter(1, station.getId())
                 .setParameter(2, station.getName())
@@ -88,7 +89,6 @@ class StationRepositoryTest {
     void getStation() {
         var company = new Company(1, "Test Name", null);
         var expectedStation = new Station(1, "SName", 0.0, 1.1, company);
-        insertCompany(company);
         insertStation(expectedStation);
 
         Optional<Station> foundStationOptional = stationRepository.findById(expectedStation.getId());
@@ -110,9 +110,9 @@ class StationRepositoryTest {
         var company = new Company(1, "Test Name", null);
         var newCompany = new Company(2, "Test Name 2", company);
         var expectedStation = new Station(1, "SName", 0.0, 1.1, company);
-        insertCompany(company);
-        insertCompany(newCompany);
         insertStation(expectedStation);
+        insertCompany(newCompany);
+
         var newStation = new Station(1, "SName 2", -10.0, 1.101, newCompany);
 
         stationRepository.save(newStation);
@@ -130,7 +130,6 @@ class StationRepositoryTest {
         var company = new Company(1, "Test Name", null);
         var nonExistentCompany = new Company(2, "Test Name", null);
         var expectedStation = new Station(1, "SName", 0.0, 1.1, company);
-        insertCompany(company);
         insertStation(expectedStation);
         var newStation = new Station(1, "SName 2", -10.0, 1.101, nonExistentCompany);
 
@@ -145,7 +144,6 @@ class StationRepositoryTest {
     void deleteStation() {
         var company = new Company(1, "Test Name", null);
         var expectedStation = new Station(1, "SName", 0.0, 1.1, company);
-        insertCompany(company);
         insertStation(expectedStation);
 
         assertDoesNotThrow(() ->
@@ -173,7 +171,6 @@ class StationRepositoryTest {
         var station1 = new Station(1, "SName", 1.0, 0.0, company);
         var station2 = new Station(2, "SName", 1.0, 1.0, company);
         var station3 = new Station(3, "SName", 10.0, 0.0, company);
-        insertCompany(company);
         insertStation(station1);
         insertStation(station2);
         insertStation(station3);
@@ -198,11 +195,6 @@ class StationRepositoryTest {
         var relevantStation4 = new Station(4, "SName", 10.0, 0.0, grandchildCompany);
         var irrelevantCompany = new Company(6, "Test Name", null);
         var irrelevantStation1 = new Station(5, "SName", 10.0, 0.0, irrelevantCompany);
-        insertCompany(company);
-        insertCompany(childCompany1);
-        insertCompany(childCompany2);
-        insertCompany(grandchildCompany);
-        insertCompany(irrelevantCompany);
         insertStation(relevantStation1);
         insertStation(relevantStation2);
         insertStation(relevantStation3);
@@ -223,10 +215,8 @@ class StationRepositoryTest {
         var company = new Company(2, "Test Name", parentCompany);
         var irrelevantStation2 = new Station(6, "SName", 10.0, 0.0, parentCompany);
         var relevantStation1 = new Station(1, "SName", 1.0, 0.0, company);
-        insertCompany(parentCompany);
-        insertCompany(company);
-        insertStation(relevantStation1);
         insertStation(irrelevantStation2);
+        insertStation(relevantStation1);
 
         List<Station> childStations = stationRepository.searchByCompany(company.getId());
 
