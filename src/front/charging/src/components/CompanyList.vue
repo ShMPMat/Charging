@@ -20,6 +20,16 @@ const companies = ref({})
 const editedStations = ref(new Set())
 const editedCompanies = ref(new Set())
 
+const companyStationsView = ref({
+  companyId: null,
+  stations: []
+})
+const stationsIdRadiusView = ref({
+  latitude: null,
+  longitude: null,
+  radiusKm: null
+})
+
 
 function addCompany() {
   axios.post('http://localhost:8080/company', newCompany.value)
@@ -103,9 +113,34 @@ function deleteStation(companyId, stationId) {
         window.alert(error)
       })
 }
+
+function searchCompanyStations() {
+  axios.get(`http://localhost:8080/company/${companyStationsView.value.companyId}/station`)
+      .then(result => {
+        companyStationsView.value.stations = result.data
+      })
+      .catch(error => {
+        window.alert(error)
+      })
+}
+
+function searchStationsInRadius() {
+  const {latitude, longitude, radiusKm} = stationsIdRadiusView.value
+
+  axios.get(`http://localhost:8080/station`, {params: {latitude, longitude, radiusKm}})
+      .then(result => {
+        stationsIdRadiusView.value.stations = result.data
+      })
+      .catch(error => {
+        window.alert(error)
+      })
+}
 </script>
 
 <template>
+  <h1>
+    Edit companies and stations
+  </h1>
   <div v-for="{id : companyId, name, parentCompany, stations} in companies">
     <div class="company-entry">
       <div class="company-data" v-if="!editedCompanies.has(companyId)">
@@ -163,10 +198,43 @@ function deleteStation(companyId, stationId) {
       Add Company
     </button>
   </div>
+
+  <div class="company-stations-view">
+    <h1>
+      Search company stations
+    </h1>
+    <input v-model="companyStationsView.companyId" type="number" placeholder="Company Id">
+    <button @click="searchCompanyStations">
+      Search Stations
+    </button>
+    <div v-for="{id : stationId, latitude, longitude, name, company} in companyStationsView.stations"
+         class="station-entry"
+    >
+      {{ stationId }} {{ name }} {{ latitude }} {{ longitude }} Company: {{ company.name }}
+    </div>
+  </div>
+
+  <div class="station-search-view">
+    <h1>
+      Search Stations in Radius
+    </h1>
+    <input v-model="stationsIdRadiusView.latitude" type="number" placeholder="Latitude">
+    <input v-model="stationsIdRadiusView.longitude" type="number" placeholder="Longitude">
+    <input v-model="stationsIdRadiusView.radiusKm" type="number" placeholder="Radius Km">
+    <button @click="searchStationsInRadius">
+      Search Stations
+    </button>
+    <div v-for="{id : stationId, latitude, longitude, name, company} in stationsIdRadiusView.stations"
+         class="station-entry"
+    >
+      {{ stationId }} {{ name }} {{ latitude }} {{ longitude }} Company: {{ company.name }}
+    </div>
+  </div>
 </template>
 
 <style scoped>
 h1 {
+  margin: 1rem 0 1rem 0;
   font-weight: 500;
   font-size: 2.6rem;
   top: -10px;
