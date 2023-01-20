@@ -138,11 +138,11 @@ function deleteStation(companyId, stationId) {
           <input v-model="companies[companyId].stations[stationId].name" placeholder="Name">
           <input v-model="companies[companyId].stations[stationId].latitude" type="number" placeholder="Latitude">
           <input v-model="companies[companyId].stations[stationId].longitude" type="number" placeholder="Longitude">
-          <button @click="editedStations.delete(stationId)">
+          <button @click="updateStation(companyId, stationId)">
             Submit Station
           </button>
         </div>
-        <button @click="updateStation(companyId, stationId)">
+        <button @click="deleteStation(companyId, stationId)">
           Delete Station
         </button>
       </div>
