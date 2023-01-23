@@ -40,6 +40,10 @@ public class CompanyService {
         getCompany(company.getId());
 
         if (company.getParentCompany() != null) {
+            if (company.getParentCompany().getId() == company.getId()) {
+                throw new IncorrectCompanyFormatException("Company cannot be its own parent");
+            }
+
             getCompany(company.getParentCompany().getId());
         }
 

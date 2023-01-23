@@ -167,6 +167,21 @@ class CompanyServiceUnitTest {
     }
 
     @Test
+    void updateCompanyThrowsOnIdEqualsParentId() {
+        var company = new Company(1, "Name", null);
+        company.setParentCompany(company);
+        when(companyRepository.findById(company.getId()))
+                .thenReturn(Optional.of(company));
+
+        assertThrows(
+                IncorrectCompanyFormatException.class,
+                () -> companyService.updateCompany(company)
+        );
+        verify(companyRepository, never())
+                .save(any());
+    }
+
+    @Test
     void deleteCompany() {
         var company = new Company(1, "Name", null);
         doNothing()

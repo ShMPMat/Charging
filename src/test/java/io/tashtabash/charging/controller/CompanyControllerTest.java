@@ -3,6 +3,7 @@ package io.tashtabash.charging.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.tashtabash.charging.entity.Company;
 import io.tashtabash.charging.entity.Station;
+import io.tashtabash.charging.service.IncorrectCompanyFormatException;
 import io.tashtabash.charging.service.CompanyService;
 import io.tashtabash.charging.service.NoCompanyFoundException;
 import io.tashtabash.charging.service.StationService;
@@ -14,10 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -203,6 +202,20 @@ class CompanyControllerTest {
                         .content(objectMapper.writeValueAsString(company))
                         .contentType("application/json")
         ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateCompanyAnswers400OnIdEqualsParentId() throws Exception {
+        var oldCompany = new Company(1, "N", null);
+        var incorrectCompany = new Company(1, "N", oldCompany);
+        when(companyService.updateCompany(any()))
+                .thenThrow(new IncorrectCompanyFormatException("Test Message"));
+
+        mockMvc.perform(
+                put("/company")
+                        .content(objectMapper.writeValueAsString(incorrectCompany))
+                        .contentType("application/json")
+        ).andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest()
