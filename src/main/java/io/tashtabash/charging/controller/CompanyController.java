@@ -4,6 +4,7 @@ package io.tashtabash.charging.controller;
 import io.tashtabash.charging.entity.Company;
 import io.tashtabash.charging.entity.Station;
 import io.tashtabash.charging.service.CompanyService;
+import io.tashtabash.charging.service.IncorrectCompanyFormatException;
 import io.tashtabash.charging.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,9 @@ public class CompanyController {
     }
 
     @PostMapping(value="")
-    public ResponseEntity<?> saveCompany(@RequestBody SaveCompanyDto data) {
+    public ResponseEntity<Company> saveCompany(@RequestBody SaveCompanyDto data) {
         if (data.name().strip().equals("")) {
-            return ResponseEntity.badRequest()
-                    .body("Company name must not be blank");
+            throw new IncorrectCompanyFormatException("Company name must not be blank");
         }
 
         Company newCompany = companyService.saveCompany(data.name(), data.parentCompanyId());
@@ -49,10 +49,9 @@ public class CompanyController {
 
     //TODO add checks for inconsistent parent data?
     @PutMapping("")
-    public ResponseEntity<?> updateCompany(@RequestBody Company company) {
+    public ResponseEntity<Company> updateCompany(@RequestBody Company company) {
         if (company.getName().strip().equals("")) {
-            return ResponseEntity.badRequest()
-                    .body("Company name must not be blank");
+            throw new IncorrectCompanyFormatException("Company name must not be blank");
         }
 
         Company updatedCompany = companyService.updateCompany(company);

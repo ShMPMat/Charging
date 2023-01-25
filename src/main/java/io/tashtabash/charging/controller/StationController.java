@@ -2,6 +2,7 @@ package io.tashtabash.charging.controller;
 
 
 import io.tashtabash.charging.entity.Station;
+import io.tashtabash.charging.service.IncorrectStationFormatException;
 import io.tashtabash.charging.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,34 +23,26 @@ public class StationController {
         this.stationService = stationService;
     }
 
-    private ResponseEntity<String> checkStationData(String name, double latitude, double longitude) {
+    private void checkStationData(String name, double latitude, double longitude) {
         if (name.strip().equals("")) {
-            return ResponseEntity.badRequest()
-                    .body("Station name must not be blank");
+            throw new IncorrectStationFormatException("Station name must not be blank");
         }
 
-        return checkCoordinates(latitude, longitude);
+        checkCoordinates(latitude, longitude);
     }
 
-    private ResponseEntity<String> checkCoordinates(double latitude, double longitude) {
+    private void checkCoordinates(double latitude, double longitude) {
         if (latitude < -90 || 90 < latitude) {
-            return ResponseEntity.badRequest()
-                    .body("Station latitude must be in range between -90 and 90");
+            throw new IncorrectStationFormatException("Station latitude must be in range between -90 and 90");
         }
         if (longitude < -180 || 180 < longitude) {
-            return ResponseEntity.badRequest()
-                    .body("Station longitude must be in range between -180 and 180");
+            throw new IncorrectStationFormatException("Station longitude must be in range between -180 and 180");
         }
-
-        return null;
     }
 
     @PostMapping(value="")
-    public ResponseEntity<?> saveStation(@RequestBody SaveStationDto data) {
-        ResponseEntity<String> badRequestResponse = checkStationData(data.name(), data.latitude(), data.longitude());
-        if (badRequestResponse != null) {
-            return badRequestResponse;
-        }
+    public ResponseEntity<Station> saveStation(@RequestBody SaveStationDto data) {
+        checkStationData(data.name(), data.latitude(), data.longitude());
 
         Station newStation = stationService.saveStation(
                 data.name(),
@@ -63,18 +56,14 @@ public class StationController {
     }
 
     @GetMapping(value="")
-    public ResponseEntity<?> searchStations(
+    public ResponseEntity<List<Station>> searchStations(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam double radiusKm
     ) {
-        ResponseEntity<String> badRequestResponse = checkCoordinates(latitude, longitude);
-        if (badRequestResponse != null) {
-            return badRequestResponse;
-        }
+        checkCoordinates(latitude, longitude);
         if (radiusKm < 0) {
-            return ResponseEntity.badRequest()
-                    .body("Radius must be positive");
+            throw new IncorrectStationFormatException("Radius must be positive");
         }
 
         List<Station> stations = stationService.searchInRadiusOrderByDistance(latitude, longitude, radiusKm);
@@ -90,15 +79,8 @@ public class StationController {
     }
 
     @PutMapping("")
-    public ResponseEntity<?> updateStation(@RequestBody Station station) {
-        ResponseEntity<String> badRequestResponse = checkStationData(
-                station.getName(),
-                station.getLatitude(),
-                station.getLongitude()
-        );
-        if (badRequestResponse != null) {
-            return badRequestResponse;
-        }
+    public ResponseEntity<Station> updateStation(@RequestBody Station station) {
+        checkStationData(station.getName(), station.getLatitude(), station.getLongitude());
 
         Station updatedStation = stationService.updateStation(station);
 
