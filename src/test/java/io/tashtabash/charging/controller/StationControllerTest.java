@@ -3,9 +3,9 @@ package io.tashtabash.charging.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.tashtabash.charging.entity.Company;
 import io.tashtabash.charging.entity.Station;
-import io.tashtabash.charging.service.NoCompanyFoundException;
 import io.tashtabash.charging.service.NoStationFoundException;
 import io.tashtabash.charging.service.StationService;
+import io.tashtabash.charging.service.UnprocessableStationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -79,7 +79,7 @@ class StationControllerTest {
     }
 
     @Test
-    void saveStationAnswers404OnNoParent() throws Exception {
+    void saveStationAnswers422OnNoParent() throws Exception {
         var company = new Company(5, "Test Name", null);
         var station = new Station("SName", 0.0, 1.1, company);
         when(stationService.saveStation(
@@ -87,7 +87,7 @@ class StationControllerTest {
                 station.getLatitude(),
                 station.getLongitude(),
                 station.getCompany().getId())
-        ).thenThrow(new NoCompanyFoundException(company.getId()));
+        ).thenThrow(new UnprocessableStationException("Mock message"));
 
         var payload = new SaveStationDto(
                 station.getName(),
@@ -99,7 +99,7 @@ class StationControllerTest {
                         post("/station")
                                 .content(objectMapper.writeValueAsString(payload))
                                 .contentType("application/json")
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isUnprocessableEntity());
     }
 
     @ParameterizedTest()
@@ -222,17 +222,17 @@ class StationControllerTest {
     }
 
     @Test
-    void updateStationAnswers404OnUnknownCompany() throws Exception {
+    void updateStationAnswers422OnUnknownCompany() throws Exception {
         var nonExistentCompany = new Company(2, "Test Name", null);
         var station = new Station(2, "SName", 0.0, 1.1, nonExistentCompany);
         when(stationService.updateStation(station))
-                .thenThrow(new NoCompanyFoundException(nonExistentCompany.getId()));
+                .thenThrow(new UnprocessableStationException("Mock message"));
 
         mockMvc.perform(
                         put("/station")
                                 .content(objectMapper.writeValueAsString(station))
                                 .contentType("application/json")
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isUnprocessableEntity());
     }
 
     @Test

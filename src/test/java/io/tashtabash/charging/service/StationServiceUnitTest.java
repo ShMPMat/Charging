@@ -52,14 +52,14 @@ class StationServiceUnitTest {
     }
 
     @Test
-    void saveServiceThrowsOnNonExistentCompany() {
+    void saveServiceThrowsUnprocessableExceptionOnNonExistentCompany() {
         var company = new Company(5, "Parent", null);
         var expectedStation = new Station("SName", 0.0, 1.1, company);
         when(companyService.getCompany(company.getId()))
                 .thenThrow(new NoCompanyFoundException(company.getId()));
 
         assertThrows(
-                NoCompanyFoundException.class,
+                UnprocessableStationException.class,
                 () -> stationService.saveStation(
                         expectedStation.getName(),
                         expectedStation.getLatitude(),
@@ -85,7 +85,7 @@ class StationServiceUnitTest {
     }
 
     @Test
-    void getStationThrowsOnNoStation() {
+    void getStationThrowsNotFoundExceptionOnNoStation() {
         assertThrows(
                 NoStationFoundException.class,
                 () -> stationService.getStation(1)
@@ -113,7 +113,7 @@ class StationServiceUnitTest {
     }
 
     @Test
-    void updateCompanyThrowsOnUnknownParent() {
+    void updateCompanyThrowsUnprocessableExceptionOnUnknownParent() {
         var company = new Company(5, "Parent", null);
         var nonExistentCompany = new Company(2, "New Parent", null);
         var station = new Station(1, "SName", 0.0, 1.1, company);
@@ -126,13 +126,13 @@ class StationServiceUnitTest {
                 .thenReturn(newStation);
 
         assertThrows(
-                NoCompanyFoundException.class,
+                UnprocessableStationException.class,
                 () -> stationService.updateStation(newStation)
         );
     }
 
     @Test
-    void updateStationThrowsOnAbsentId() {
+    void updateStationThrowsNotFoundExceptionOnAbsentId() {
         var company = new Company(1, "Parent", null);
 
         assertThrows(
@@ -158,7 +158,7 @@ class StationServiceUnitTest {
     }
 
     @Test
-    void deleteStationThrowsOnAbsentId() {
+    void deleteStationThrowsNotFoundExceptionOnAbsentId() {
         long id = 1;
         when(stationRepository.findById(id))
                 .thenReturn(Optional.empty());
@@ -209,7 +209,7 @@ class StationServiceUnitTest {
 
     @Test
     @Transactional
-    void searchOwnedStationsThrowsOnNonExistentCompany() {
+    void searchOwnedStationsThrowsNotFoundExceptionOnNonExistentCompany() {
         var company = new Company(1, "Test Name", null);
         when(companyService.getCompany(company.getId()))
                 .thenThrow(new NoCompanyFoundException(company.getId()));

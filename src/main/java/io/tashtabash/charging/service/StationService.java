@@ -25,10 +25,14 @@ public class StationService {
 
     @Transactional
     public Station saveStation(String name, double latitude, double longitude, long companyId) {
-        var company = companyService.getCompany(companyId);
-        var station = new Station(name, latitude, longitude, company);
+        try {
+            var company = companyService.getCompany(companyId);
+            var station = new Station(name, latitude, longitude, company);
 
-        return stationRepository.save(station);
+            return stationRepository.save(station);
+        } catch (NoCompanyFoundException e) {
+            throw new UnprocessableStationException("Company with id " + companyId + " doesn't exist");
+        }
     }
 
     public Station getStation(long id) {
@@ -41,13 +45,19 @@ public class StationService {
 
     @Transactional
     public Station updateStation(Station station) {
-        Station oldStation = getStation(station.getId());
+        try {
+            Station oldStation = getStation(station.getId());
 
-        if (oldStation.getCompany().getId() != station.getCompany().getId()) {
-            companyService.getCompany(station.getCompany().getId());
+            if (oldStation.getCompany().getId() != station.getCompany().getId()) {
+                companyService.getCompany(station.getCompany().getId());
+            }
+
+            return stationRepository.save(station);
+        } catch (NoCompanyFoundException e) {
+            long companyId = station.getCompany().getId();
+
+            throw new UnprocessableStationException("Company with id " + companyId + " doesn't exist");
         }
-
-        return stationRepository.save(station);
     }
 
     @Transactional

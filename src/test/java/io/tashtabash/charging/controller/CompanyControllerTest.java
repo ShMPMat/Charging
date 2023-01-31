@@ -3,10 +3,7 @@ package io.tashtabash.charging.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.tashtabash.charging.entity.Company;
 import io.tashtabash.charging.entity.Station;
-import io.tashtabash.charging.service.IncorrectCompanyFormatException;
-import io.tashtabash.charging.service.CompanyService;
-import io.tashtabash.charging.service.NoCompanyFoundException;
-import io.tashtabash.charging.service.StationService;
+import io.tashtabash.charging.service.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -86,18 +83,18 @@ class CompanyControllerTest {
     }
 
     @Test
-    void saveCompanyAnswers404OnNoParent() throws Exception {
+    void saveCompanyAnswers422OnNoParent() throws Exception {
         var parentCompany = new Company(5, "Parent", null);
         var resultCompany = new Company(1, "Name 1", parentCompany);
         when(companyService.saveCompany(resultCompany.getName(), parentCompany.getId()))
-                .thenThrow(new NoCompanyFoundException(parentCompany.getId()));
+                .thenThrow(new UnprocessableCompanyException("Mock message"));
 
         var payload = new SaveCompanyDto(resultCompany.getName(), resultCompany.getParentCompany().getId());
         mockMvc.perform(
                         post("/company")
                                 .content(objectMapper.writeValueAsString(payload))
                                 .contentType("application/json")
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isUnprocessableEntity());
     }
 
     @ParameterizedTest()
@@ -182,13 +179,13 @@ class CompanyControllerTest {
         var nonExistentCompany = new Company(2, "Test Name", null);
         var company = new Company(1, "N", nonExistentCompany);
         when(companyService.updateCompany(company))
-                .thenThrow(new NoCompanyFoundException(nonExistentCompany.getId()));
+                .thenThrow(new UnprocessableCompanyException("Mock message"));
 
         mockMvc.perform(
                         put("/company")
                                 .content(objectMapper.writeValueAsString(company))
                                 .contentType("application/json")
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isUnprocessableEntity());
     }
 
     @Test

@@ -55,7 +55,7 @@ class CompanyServiceUnitTest {
     }
 
     @Test
-    void saveCompanyThrowsOnNoParent() {
+    void saveCompanyThrowsUnprocessableExceptionOnNoParent() {
         var parentCompany = new Company(5, "Parent", null);
         var expectedCompany = new Company("Test Name", parentCompany);
         when(companyRepository.save(new Company(0, expectedCompany.getName(), parentCompany)))
@@ -64,7 +64,7 @@ class CompanyServiceUnitTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                NoCompanyFoundException.class,
+                UnprocessableCompanyException.class,
                 () -> companyService.saveCompany(expectedCompany.getName(), parentCompany.getId())
         );
     }
@@ -99,7 +99,7 @@ class CompanyServiceUnitTest {
     }
 
     @Test
-    void getCompanyThrowsOnNoCompany() {
+    void getCompanyThrowsNotFoundExceptionOnNoCompany() {
         assertThrows(
                 NoCompanyFoundException.class,
                 () -> companyService.getCompany(1)
@@ -142,7 +142,7 @@ class CompanyServiceUnitTest {
     }
 
     @Test
-    void updateCompanyThrowsOnUnknownParent() {
+    void updateCompanyThrowsUnprocessableExceptionOnUnknownParent() {
         var nonExistentCompany = new Company(2, "Test Name", null);
         var company = new Company(1, "Name", nonExistentCompany);
         when(companyRepository.save(company))
@@ -153,13 +153,13 @@ class CompanyServiceUnitTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                NoCompanyFoundException.class,
+                UnprocessableCompanyException.class,
                 () -> companyService.updateCompany(company)
         );
     }
 
     @Test
-    void updateCompanyThrowsOnAbsentId() {
+    void updateCompanyThrowsNotFoundExceptionOnAbsentId() {
         assertThrows(
                 NoCompanyFoundException.class,
                 () -> companyService.updateCompany(new Company(1, "Name", null))
@@ -167,7 +167,7 @@ class CompanyServiceUnitTest {
     }
 
     @Test
-    void updateCompanyThrowsOnIdEqualsParentId() {
+    void updateCompanyThrowsIncorrectFormatExceptionOnIdEqualsParentId() {
         var company = new Company(1, "Name", null);
         company.setParentCompany(company);
         when(companyRepository.findById(company.getId()))
@@ -197,7 +197,7 @@ class CompanyServiceUnitTest {
     }
 
     @Test
-    void deleteCompanyThrowsOnAbsentId() {
+    void deleteCompanyThrowsNotFoundExceptionOnAbsentId() {
         assertThrows(
                 NoCompanyFoundException.class,
                 () -> companyService.deleteCompany(1)
