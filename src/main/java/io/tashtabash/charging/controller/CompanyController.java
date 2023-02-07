@@ -40,6 +40,13 @@ public class CompanyController {
                 .body(newCompany);
     }
 
+    @GetMapping(value="")
+    public ResponseEntity<List<Company>> getCompanies() {
+        List<Company> companies = companyService.getCompanies();
+
+        return ResponseEntity.ok(companies);
+    }
+
     @GetMapping(value="/{id}")
     public ResponseEntity<Company> getCompany(@PathVariable long id) {
         Company company = companyService.getCompany(id);

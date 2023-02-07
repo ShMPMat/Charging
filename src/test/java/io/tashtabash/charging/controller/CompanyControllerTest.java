@@ -110,6 +110,23 @@ class CompanyControllerTest {
     }
 
     @Test
+    void getCompanies() throws Exception {
+        var parentCompany = new Company(1, "Test 1", null);
+        var expectedCompanies = List.of(
+                new Company(2, "Test 2", null),
+                new Company(3, "Test 3", parentCompany),
+                new Company(4, "Test 4", null)
+        );
+        when(companyService.getCompanies())
+                .thenReturn(expectedCompanies);
+
+        mockMvc.perform(get("/company"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedCompanies)));
+    }
+
+    @Test
     void getCompany() throws Exception {
         var company = new Company(1, "N", null);
         when(companyService.getCompany(company.getId()))

@@ -7,8 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -67,6 +69,23 @@ class CompanyServiceUnitTest {
                 UnprocessableCompanyException.class,
                 () -> companyService.saveCompany(expectedCompany.getName(), parentCompany.getId())
         );
+    }
+
+    @Test
+        void getCompanies() {
+            var parentCompany = new Company(1, "Test 1", null);
+            var expectedCompanies = List.of(
+                    new Company(2, "Test 2", null),
+                    new Company(3, "Test 3", parentCompany),
+                    new Company(4, "Test 4", null)
+            );
+        when(companyRepository.findAll())
+                .thenReturn(expectedCompanies);
+
+        List<Company> companies = companyService.getCompanies();
+
+        assertThat(companies)
+                .containsExactlyInAnyOrderElementsOf(expectedCompanies);
     }
 
     @Test

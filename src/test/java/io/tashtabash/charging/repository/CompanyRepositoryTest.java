@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.annotation.DirtiesContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
@@ -94,6 +96,26 @@ class CompanyRepositoryTest {
                 DataAccessException.class,
                 () -> companyRepository.save(expectedCompany)
         );
+    }
+
+    @Test
+    @Transactional
+    void getCompanies() {
+        var parentCompany = new Company(1, "Test 1", null);
+        var expectedCompanies = List.of(
+                new Company(2, "Test 2", null),
+                new Company(3, "Test 3", parentCompany),
+                new Company(4, "Test 4", null)
+        );
+        insertCompany(parentCompany);
+        for (var company : expectedCompanies) {
+            insertCompany(company);
+        }
+
+        List<Company> foundCompanies = companyRepository.findAll();
+
+        assertThat(foundCompanies)
+                .containsExactlyInAnyOrderElementsOf(foundCompanies);
     }
 
     @Test
@@ -220,7 +242,6 @@ class CompanyRepositoryTest {
                 .getResultList();
         assertEquals(0, companies.size());
     }
-
 
 
     @Test
