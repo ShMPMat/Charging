@@ -30,20 +30,25 @@ const stationsIdRadiusView = ref({
   radiusKm: null
 })
 
+onMounted(() => {
+  axios.get('http://localhost:8080/company')
+      .then(response => {
+        const rawCompanies = response.data
+
+        for (const company of rawCompanies) {
+          putCompanyToRenderedSet(company)
+        }
+      })
+      .catch(error => {
+        window.alert(error.response.data.message ?? error.response.data)
+      })
+})
+
 
 function addCompany() {
   axios.post('http://localhost:8080/company', newCompany.value)
       .then(response => {
-        const company = response.data
-        company.stations = {}
-
-        companies.value[company.id] = company
-        newStations.value[company.id] = {
-          name: "",
-          latitude: null,
-          longitude: null,
-          companyId: company.id
-        }
+        putCompanyToRenderedSet(response.data)
       })
       .catch(error => {
         window.alert(error.response.data.message ?? error.response.data)
@@ -135,6 +140,18 @@ function searchStationsInRadius() {
         window.alert(error.response.data.message ?? error.response.data)
       })
 }
+
+function putCompanyToRenderedSet(company) {
+  company.stations = {}
+  companies.value[company.id] = company
+  newStations.value[company.id] = {
+    name: "",
+    latitude: null,
+    longitude: null,
+    companyId: company.id
+  }
+}
+
 </script>
 
 <template>
