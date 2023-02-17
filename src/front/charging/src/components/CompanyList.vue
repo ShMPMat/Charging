@@ -2,19 +2,13 @@
 import axios from 'axios'
 import {onMounted, ref} from 'vue'
 
-defineProps({
-  msg: {
-    type: String,
-    required: true
-  }
-})
-
 const newCompany = ref({
   name: "",
   parentCompanyId: null
 })
 //companyId to template
 const newStations = ref({})
+
 const companies = ref({})
 
 const editedStations = ref(new Set())
