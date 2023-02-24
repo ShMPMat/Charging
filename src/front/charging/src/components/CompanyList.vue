@@ -24,115 +24,109 @@ const stationsIdRadiusView = ref({
   radiusKm: null
 })
 
-onMounted(() => {
-  axios.get('http://localhost:8080/company')
-      .then(response => {
-        const rawCompanies = response.data
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/company')
 
-        for (const company of rawCompanies) {
-          putCompanyToRenderedSet(company)
-        }
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+    for (const company of response.data) {
+      putCompanyToRenderedSet(company)
+    }
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 })
 
 
-function addCompany() {
-  axios.post('http://localhost:8080/company', newCompany.value)
-      .then(response => {
-        putCompanyToRenderedSet(response.data)
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+async function addCompany() {
+  try {
+    const response = await axios.post('http://localhost:8080/company', newCompany.value)
+
+    putCompanyToRenderedSet(response.data)
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function addStation(companyId) {
-  axios.post('http://localhost:8080/station', newStations.value[companyId])
-      .then(response => {
-        const station = response.data
+async function addStation(companyId) {
+  try {
+    const response = await axios.post('http://localhost:8080/station', newStations.value[companyId])
+    const station = response.data
 
-        companies.value[companyId]
-            .stations[station.id] = station
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+    companies.value[companyId]
+        .stations[station.id] = station
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function updateCompany(id) {
-  axios.put(`http://localhost:8080/company`, companies.value[id])
-      .then(response => {
-        const company = response.data
-        company.stations = companies.value[id].stations
+async function updateCompany(id) {
+  try {
+    const response = await axios.put(`http://localhost:8080/company`, companies.value[id])
+    const company = response.data
+    company.stations = companies.value[id].stations
 
-        companies.value[id] = company
+    companies.value[id] = company
 
-        editedCompanies.value.delete(id)
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+    editedCompanies.value.delete(id)
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function updateStation(companyId, id) {
-  axios.put(`http://localhost:8080/station`, companies.value[companyId].stations[id])
-      .then(response => {
-        const station = response.data
+async function updateStation(companyId, id) {
+  try {
+    const response = await axios.put(`http://localhost:8080/station`, companies.value[companyId].stations[id])
 
-        companies.value[companyId].stations[id] = station
+    companies.value[companyId].stations[id] = response.data
 
-        editedStations.value.delete(id)
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+    editedStations.value.delete(id)
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function deleteCompany(id) {
-  axios.delete(`http://localhost:8080/company/${id}`)
-      .then(_ => {
-        delete companies.value[id]
-        delete newStations.value[id]
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+async function deleteCompany(id) {
+  try {
+    await axios.delete(`http://localhost:8080/company/${id}`)
+
+    delete companies.value[id]
+    delete newStations.value[id]
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function deleteStation(companyId, stationId) {
-  axios.delete(`http://localhost:8080/station/${stationId}`)
-      .then(_ => {
-        const company = companies.value[companyId]
-        company.stations = company.stations.filter(s => s.id !== stationId)
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+async function deleteStation(companyId, stationId) {
+  try {
+    await axios.delete(`http://localhost:8080/station/${stationId}`)
+
+    const company = companies.value[companyId]
+    company.stations = company.stations.filter(s => s.id !== stationId)
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function searchCompanyStations() {
-  axios.get(`http://localhost:8080/company/${companyStationsView.value.companyId}/station`)
-      .then(result => {
-        companyStationsView.value.stations = result.data
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+async function searchCompanyStations() {
+  try {
+    const response = await axios.get(`http://localhost:8080/company/${companyStationsView.value.companyId}/station`)
+
+    companyStationsView.value.stations = response.data
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
-function searchStationsInRadius() {
-  const {latitude, longitude, radiusKm} = stationsIdRadiusView.value
+async function searchStationsInRadius() {
+  try {
+    const {latitude, longitude, radiusKm} = stationsIdRadiusView.value
 
-  axios.get(`http://localhost:8080/station`, {params: {latitude, longitude, radiusKm}})
-      .then(result => {
-        stationsIdRadiusView.value.stations = result.data
-      })
-      .catch(error => {
-        window.alert(error.response.data.message ?? error.response.data)
-      })
+    const response = await axios.get(`http://localhost:8080/station`, {params: {latitude, longitude, radiusKm}})
+
+    stationsIdRadiusView.value.stations = response.data
+  } catch (error) {
+    window.alert(error.response.data.message ?? error.response.data)
+  }
 }
 
 function putCompanyToRenderedSet(company) {
