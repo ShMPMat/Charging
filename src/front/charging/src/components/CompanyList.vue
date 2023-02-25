@@ -99,9 +99,9 @@ async function deleteCompany(id) {
 async function deleteStation(companyId, stationId) {
   try {
     await axios.delete(`http://localhost:8080/station/${stationId}`)
-
     const company = companies.value[companyId]
-    company.stations = company.stations.filter(s => s.id !== stationId)
+
+    delete company.stations[stationId]
   } catch (error) {
     window.alert(error.response.data.message ?? error.response.data)
   }
