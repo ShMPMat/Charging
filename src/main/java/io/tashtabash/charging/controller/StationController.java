@@ -40,7 +40,7 @@ public class StationController {
         }
     }
 
-    @PostMapping(value="")
+    @PostMapping("")
     public ResponseEntity<Station> saveStation(@RequestBody SaveStationDto data) {
         checkStationData(data.name(), data.latitude(), data.longitude());
 
@@ -55,7 +55,7 @@ public class StationController {
                 .body(newStation);
     }
 
-    @GetMapping(value="")
+    @GetMapping("")
     public ResponseEntity<List<Station>> searchStations(
             @RequestParam double latitude,
             @RequestParam double longitude,
@@ -71,7 +71,7 @@ public class StationController {
         return ResponseEntity.ok(stations);
     }
 
-    @GetMapping(value="/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Station> getStation(@PathVariable long id) {
         Station station = stationService.getStation(id);
 
@@ -87,7 +87,7 @@ public class StationController {
         return ResponseEntity.ok(updatedStation);
     }
 
-    @DeleteMapping(value="/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteStation(@PathVariable long id) {
         stationService.deleteStation(id);
 

@@ -28,7 +28,7 @@ public class CompanyController {
         this.stationService = stationService;
     }
 
-    @PostMapping(value="")
+    @PostMapping("")
     public ResponseEntity<Company> saveCompany(@RequestBody SaveCompanyDto data) {
         if (data.name().strip().equals("")) {
             throw new IncorrectCompanyFormatException("Company name must not be blank");
@@ -40,14 +40,14 @@ public class CompanyController {
                 .body(newCompany);
     }
 
-    @GetMapping(value="")
+    @GetMapping("")
     public ResponseEntity<List<Company>> getCompanies() {
         List<Company> companies = companyService.getCompanies();
 
         return ResponseEntity.ok(companies);
     }
 
-    @GetMapping(value="/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Company> getCompany(@PathVariable long id) {
         Company company = companyService.getCompany(id);
 
@@ -66,7 +66,7 @@ public class CompanyController {
         return ResponseEntity.ok(updatedCompany);
     }
 
-    @DeleteMapping(value="/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCompany(@PathVariable long id) {
         companyService.deleteCompany(id);
 
@@ -74,7 +74,7 @@ public class CompanyController {
                 .build();
     }
 
-    @GetMapping(value="/{id}/station")
+    @GetMapping("/{id}/station")
     public ResponseEntity<List<Station>> searchStations(@PathVariable long id) {
         List<Station> stations = stationService.searchByCompany(id);
 
